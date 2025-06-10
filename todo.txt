@@ -1,0 +1,10 @@
+refactor to use python yt-dlp
+    autoinstall via pip if not found
+make named and timestamped dirs for each
+    if found, option to select from one
+    compress to archive
+args
+    cli args option
+    fully interactive option
+    arbitrarily mixed option
+cleanup function

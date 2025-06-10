@@ -1,13 +1,16 @@
 # SubScrape v1.2 (modified M.A.R.E)
-# original script by RK#0102
+# original script by RK#0102 & Pandela#0001
 # now with multi-language support
 
 import os
 import re
 import sys
 import subprocess
+# import yt_dlp
 from collections import defaultdict
 from urllib.parse import quote
+
+vtt_files_dir = 'vtt_files'
 
 def is_clean_line(line):
     """Check if line contains no tags and isn't empty"""
@@ -64,8 +67,14 @@ def download_captions(channel_url, include_shorts=False, lang='en'):
                 '-f', 'best',
                 '--sub-format', 'vtt',
                 '--convert-subs', 'vtt',
+                '-o', f"{vtt_files_dir}/%(title)s [%(id)s].%(ext)s", # copied the default format but added the path
                 url
             ], check=True)
+            """
+            ytdl_opts = {
+
+            }
+            """
         except subprocess.CalledProcessError as e:
             print(f"Error downloading from {url}: {e}", file=sys.stderr)
         except FileNotFoundError:
@@ -144,7 +153,7 @@ def main():
         sys.exit(1)
 
     # Check for VTT files
-    vtt_files = [f for f in os.listdir() if f.lower().endswith('.vtt')]
+    vtt_files = [f for f in os.listdir(vtt_files_dir) if f.lower().endswith('.vtt')]
 
     if not vtt_files:
         print("No VTT files found in current directory")
@@ -163,7 +172,7 @@ def main():
         download_captions(channel_url, include_shorts, lang)
         
         # Refresh file list after download
-        vtt_files = [f for f in os.listdir() if f.lower().endswith('.vtt')]
+        vtt_files = [f for f in os.listdir(vtt_files_dir) if f.lower().endswith('.vtt')]
         if not vtt_files:
             print("Still no VTT files found after download attempt. Exiting.", file=sys.stderr)
             sys.exit(1)
@@ -175,7 +184,7 @@ def main():
     global_seen_text = set()
 
     for vtt_file in vtt_files:
-        file_results = process_vtt_file(vtt_file)
+        file_results = process_vtt_file(f"{vtt_files_dir}/{vtt_file}")
         
         for start_time, seconds, text_lines, episode, filename, video_id in file_results:
             full_clean_text = " ".join(text_lines)
